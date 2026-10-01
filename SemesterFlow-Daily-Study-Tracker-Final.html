@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SemesterFlow</title>
+<style>
+:root{--bg:#0f1420;--pn:#182032;--pn2:#1f2940;--bd:#2c3853;--tx:#e8ecf5;--mu:#93a0bd;--ac:#6ea8fe;--ok:#4ade80;--wr:#fbbf24;--er:#f87171}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,"Noto Sans Bengali",sans-serif}
+.app{display:flex;min-height:100vh}nav{width:220px;background:var(--pn);border-right:1px solid var(--bd);padding:16px 10px;position:sticky;top:0;height:100vh;flex-shrink:0}
+.brand{font-weight:700;font-size:18px;padding:4px 10px}.brand small{display:block;color:var(--mu);font-weight:400;font-size:12px;margin-bottom:14px}
+nav button{display:flex;gap:10px;align-items:center;width:100%;background:none;border:0;color:var(--mu);padding:10px;border-radius:8px;cursor:pointer;font:inherit;text-align:left}
+nav button:hover{background:var(--pn2)}nav button.on{background:var(--pn2);color:var(--ac)}
+nav svg{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+main{flex:1;padding:20px;min-width:0;max-width:1100px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:22px;margin:0}h2{font-size:17px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.grid .card{margin:0}.lb{color:var(--mu);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.big{font-size:24px;font-weight:700;margin:4px 0}.sm{color:var(--mu);font-size:13px}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.fg .w{grid-column:1/-1}
+label{display:block;font-size:13px;color:var(--mu);margin-bottom:4px}
+input,select,textarea{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:9px;font:inherit}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.btn{background:var(--ac);color:#0b1220;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer}
+.btn.g{background:var(--pn2);color:var(--tx);border:1px solid var(--bd)}.btn.d{background:var(--er);color:#200}.btn.s{padding:4px 9px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.bar{height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--ac)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu);font-weight:600}
+.bg{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--pn2)}.bg.CP{color:var(--ok)}.bg.IP{color:var(--wr)}.bg.NS{color:var(--mu)}
+.empty{color:var(--mu);text-align:center;padding:18px}.sec{display:none}.sec.on{display:block}
+#toast{position:fixed;right:16px;bottom:16px;padding:12px 16px;border-radius:10px;background:var(--pn2);border:1px solid var(--bd);max-width:320px;display:none;z-index:9}
+#toast.ok{border-color:var(--ok)}#toast.er{border-color:var(--er)}
+.warn{background:#3a2a10;border:1px solid var(--wr);color:var(--wr);padding:10px 14px;border-radius:10px;margin-bottom:14px}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)}
+.tag{font-size:11px;color:var(--ac);border:1px solid var(--bd);border-radius:6px;padding:1px 6px}
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px;margin:8px 0}.dc{padding:10px 0;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--mu);cursor:pointer;font:inherit}.dc.on{background:var(--ok);color:#052;font-weight:700}
+@media(max-width:760px){.app{flex-direction:column}nav{width:100%;height:auto;position:static;display:flex;overflow-x:auto;padding:8px;border:0;border-bottom:1px solid var(--bd)}
+nav .brand{display:none}nav button{width:auto;white-space:nowrap}main{padding:12px}}
+</style></head><body>
+<div class="app"><nav id="nav" aria-label="Main"></nav>
+<main>
+<div class="top"><h1 id="ttl">SemesterFlow</h1>
+<div class="row" style="margin:0"><button class="btn g s" id="l-en">English</button><button class="btn g s" id="l-bn">বাংলা</button></div></div>
+<div id="warn"></div>
+
+<section class="sec" id="s-dash">
+<div class="grid" id="cards"></div>
+<div class="card"><h2 id="formT"></h2>
+<form id="logform" novalidate><div class="fg">
+<div><label for="f-date" data-i="date"></label><input type="date" id="f-date" required></div>
+<div><label for="f-sub" data-i="subject"></label><select id="f-sub"></select></div>
+<div><label for="f-act" data-i="actual"></label><input type="number" id="f-act" min="0" step="1" required></div>
+<div><label for="f-cov" data-i="cov"></label><input type="number" id="f-cov" min="0" max="100" step="1" required></div>
+<div><label for="f-stat" data-i="status"></label><select id="f-stat"></select></div>
+<div class="w"><label for="f-notes" data-i="notes"></label><textarea id="f-notes" rows="2" maxlength="500"></textarea></div>
+</div><div class="row"><button class="btn" type="submit" id="f-save"></button><button class="btn g" type="button" id="f-reset" data-i="reset"></button></div></form></div>
+</section>
+
+<section class="sec" id="s-hist"><div class="card"><h2 data-i="hist"></h2>
+<div class="fg"><div><label for="h-date" data-i="date"></label><input type="date" id="h-date"></div>
+<div><label for="h-sub" data-i="subject"></label><select id="h-sub"></select></div>
+<div><label for="h-stat" data-i="status"></label><select id="h-stat"></select></div></div>
+<div class="row"><button class="btn g" id="h-clear" data-i="clear"></button></div></div>
+<div class="card tw" id="histBox"></div></section>
+
+<section class="sec" id="s-gym"><div class="card"><h2 data-i="gymT"></h2><div id="gymBox"></div></div></section>
+<section class="sec" id="s-skills"><div class="card"><h2 data-i="skT"></h2>
+<label for="sk-name" data-i="skName"></label><div class="row" style="margin-top:0"><input id="sk-name" maxlength="60" style="max-width:320px"><button class="btn" type="button" id="sk-add" data-i="skAdd"></button></div></div>
+<div id="skBox"></div></section>
+<section class="sec" id="s-data">
+<div class="card"><h2 data-i="backup"></h2><p class="sm" data-i="backupNote"></p>
+<div class="row"><button class="btn" id="d-exp" data-i="export"></button>
+<label class="btn g" style="margin:0;cursor:pointer" for="d-file" data-i="restore"></label><input type="file" id="d-file" accept=".json,application/json" style="display:none"></div></div>
+<div class="card"><h2 data-i="danger"></h2><p class="sm" data-i="resetNote"></p><button class="btn d" id="d-reset" data-i="reset_all"></button></div>
+</section>
+</main></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){'use strict';
+var KEY='semesterflow_v1',SUBJ=['DBMS','COA','ADSA','Discrete Mathematics'],ST=['NS','IP','CP'];
+var T={
+sub:['Daily Study Tracker','দৈনিক পড়াশোনা ট্র্যাকার'],n_gym:['Gym','জিম'],n_skills:['Skills','স্কিল'],gymT:['Gym — 30-day chart','জিম — ৩০ দিনের চার্ট'],skT:['Learning skills — a 30-day chart for each','শেখার স্কিল — প্রতিটির জন্য ৩০ দিনের চার্ট'],daysDone:['days done','দিন সম্পন্ন'],day:['Day','দিন'],startDate:['Start date','শুরুর তারিখ'],clearChart:['Clear chart','চার্ট মুছুন'],skName:['Skill name','স্কিলের নাম'],skAdd:['Add skill','স্কিল যোগ'],noSk:['No skills yet. Add one above.','এখনো কোনো স্কিল নেই। উপরে যোগ করুন।'],newName:['New name:','নতুন নাম:'],
+n_dash:['Dashboard','ড্যাশবোর্ড'],n_hist:['History','ইতিহাস'],n_report:['Daily Report','দৈনিক রিপোর্ট'],n_prog:['Progress','অগ্রগতি'],n_exam:['Exams','পরীক্ষা'],n_data:['Data & Backup','ডেটা ও ব্যাকআপ'],
+c_total:['Total study time','মোট পড়ার সময়'],c_today:["Today's study time",'আজকের পড়ার সময়'],c_sess:['Study sessions','মোট সেশন'],c_comp:['Completed sessions','সম্পন্ন সেশন'],c_cov:['Overall coverage','সামগ্রিক কাভারেজ'],c_pva:['Planned vs actual','পরিকল্পিত বনাম প্রকৃত'],
+planned_w:['planned','পরিকল্পিত'],actual_w:['actual','প্রকৃত'],nodata:['No data yet','এখনো কোনো তথ্য নেই'],noRec:['No study records yet. Add your first session below.','এখনো কোনো রেকর্ড নেই। নিচে প্রথম সেশনটি যোগ করুন।'],
+logNew:['Add study session','পড়ার সেশন যোগ করুন'],logEdit:['Edit study session','সেশন সম্পাদনা করুন'],
+date:['Date','তারিখ'],subject:['Subject','বিষয়'],topic:['Chapter / topic','অধ্যায় / টপিক'],planned:['Planned time (min)','পরিকল্পিত সময় (মিনিট)'],actual:['Actual time (min)','প্রকৃত সময় (মিনিট)'],cov:['Coverage (0–100%)','কাভারেজ (০–১০০%)'],status:['Status','অবস্থা'],notes:['Notes (optional)','নোট (ঐচ্ছিক)'],
+save:['Save','সংরক্ষণ'],update:['Update','আপডেট'],reset:['Reset form','ফর্ম রিসেট'],cancel:['Cancel','বাতিল'],
+NS:['Not Started','শুরু হয়নি'],IP:['In Progress','চলমান'],CP:['Completed','সম্পন্ন'],
+saved:['Session saved.','সেশন সংরক্ষিত হয়েছে।'],updated:['Session updated.','সেশন আপডেট হয়েছে।'],deleted:['Deleted.','মুছে ফেলা হয়েছে।'],
+eDate:['Please choose a valid date.','সঠিক তারিখ নির্বাচন করুন।'],eTopic:['Please enter a chapter/topic name.','অধ্যায়/টপিকের নাম লিখুন।'],eTime:['Times must be numbers of 0 or more.','সময় অবশ্যই ০ বা তার বেশি সংখ্যা হতে হবে।'],eCov:['Coverage must be between 0 and 100.','কাভারেজ ০ থেকে ১০০ এর মধ্যে হতে হবে।'],
+confDel:['Delete this item? This cannot be undone.','এটি মুছবেন? এটি ফেরানো যাবে না।'],
+hist:['Study history','পড়ার ইতিহাস'],all:['All','সব'],clear:['Clear filters','ফিল্টার মুছুন'],actions:['Actions','কাজ'],edit:['Edit','সম্পাদনা'],del:['Delete','মুছুন'],noMatch:['No records match the filters.','ফিল্টারের সাথে কোনো রেকর্ড মেলেনি।'],
+report:['Daily report','দৈনিক রিপোর্ট'],pick:['Select a date','তারিখ নির্বাচন করুন'],noDay:['No study records for this day. A rest day, or time to log a session?','এই দিনে কোনো রেকর্ড নেই। বিশ্রামের দিন, নাকি সেশন যোগ করবেন?'],
+r_act:['Total actual time','মোট প্রকৃত সময়'],r_plan:['Total planned time','মোট পরিকল্পিত সময়'],r_sess:['Sessions','সেশন'],r_avg:['Average coverage','গড় কাভারেজ'],r_done:['Completed','সম্পন্ন'],r_ip:['In progress','চলমান'],r_bysub:['By subject','বিষয় অনুযায়ী'],
+prog:['Subject progress','বিষয়ভিত্তিক অগ্রগতি'],p_time:['Total study time','মোট সময়'],p_top:['Topics recorded','রেকর্ডকৃত টপিক'],p_avg:['Average coverage','গড় কাভারেজ'],p_calc:['Calculated from your study records','আপনার স্টাডি রেকর্ড থেকে গণনা করা'],
+p_list:['Your chapter list (maintained manually)','আপনার অধ্যায় তালিকা (নিজে সম্পাদনীয়)'],p_add:['Add chapter','অধ্যায় যোগ'],p_ph:['Chapter name','অধ্যায়ের নাম'],p_noch:['No chapters added yet.','এখনো কোনো অধ্যায় যোগ করা হয়নি।'],p_note:['Renaming a chapter does not change old study records.','অধ্যায়ের নাম বদলালে পুরনো রেকর্ড বদলায় না।'],p_rename:['New name:','নতুন নাম:'],
+exam:['Exam countdown','পরীক্ষা কাউন্টডাউন'],exName:['Exam name','পরীক্ষার নাম'],exDate:['Exam date','পরীক্ষার তারিখ'],exAdd:['Add exam','পরীক্ষা যোগ'],exUpd:['Update exam','পরীক্ষা আপডেট'],noEx:['No exams added yet.','এখনো কোনো পরীক্ষা যোগ করা হয়নি।'],
+today:['Today!','আজই!'],left:['days left','দিন বাকি'],past:['days ago (passed)','দিন আগে (শেষ)'],eExam:['Enter an exam name and a valid date.','পরীক্ষার নাম ও সঠিক তারিখ দিন।'],exSaved:['Exam saved.','পরীক্ষা সংরক্ষিত।'],
+backup:['Backup & restore','ব্যাকআপ ও রিস্টোর'],backupNote:['Your data lives only in this browser. Export a JSON backup regularly and keep it somewhere safe.','আপনার ডেটা শুধু এই ব্রাউজারে থাকে। নিয়মিত JSON ব্যাকআপ নিয়ে নিরাপদ জায়গায় রাখুন।'],
+export:['Export JSON backup','JSON ব্যাকআপ নিন'],restore:['Restore from JSON','JSON থেকে রিস্টোর'],
+exported:['Backup downloaded.','ব্যাকআপ ডাউনলোড হয়েছে।'],confRest:['Restoring will REPLACE all current data. Continue?','রিস্টোর করলে বর্তমান সব ডেটা প্রতিস্থাপিত হবে। চালিয়ে যাবেন?'],
+restOk:['Backup restored successfully.','ব্যাকআপ সফলভাবে রিস্টোর হয়েছে।'],restBad:['Invalid backup file. Your existing data was not changed.','ব্যাকআপ ফাইলটি সঠিক নয়। আপনার বর্তমান ডেটা অপরিবর্তিত আছে।'],
+danger:['Danger zone','বিপজ্জনক অংশ'],resetNote:['Deletes all records, chapters and exams permanently.','সব রেকর্ড, অধ্যায় ও পরীক্ষা স্থায়ীভাবে মুছে যাবে।'],reset_all:['Reset all data','সব ডেটা রিসেট'],
+confReset:['This will permanently delete ALL your data. Continue?','এটি আপনার সব ডেটা স্থায়ীভাবে মুছে দেবে। চালিয়ে যাবেন?'],typeReset:['Type RESET to confirm:','নিশ্চিত করতে RESET লিখুন:'],resetDone:['All data has been reset.','সব ডেটা রিসেট হয়েছে।'],
+wNoStore:['Warning: browser storage is unavailable. Nothing will be saved after you close this page. Use Export backup.','সতর্কতা: ব্রাউজার স্টোরেজ পাওয়া যাচ্ছে না। পেজ বন্ধ করলে কিছুই সংরক্ষিত থাকবে না। ব্যাকআপ এক্সপোর্ট করুন।'],
+wCorrupt:['Saved data could not be read. A raw copy was kept in the browser; starting empty. Saving now will replace the active data.','সংরক্ষিত ডেটা পড়া যায়নি। একটি কপি ব্রাউজারে রাখা হয়েছে; খালি অবস্থায় শুরু হচ্ছে। এখন সংরক্ষণ করলে সক্রিয় ডেটা বদলে যাবে।'],
+wPartial:['Some invalid saved entries were skipped.','সংরক্ষিত ডেটার কিছু ভুল এন্ট্রি বাদ দেওয়া হয়েছে।'],
+hm:['h','ঘ'],mm:['m','মি']};
+var st={records:[],chapters:{},exams:[],lang:'en',gym:cleanChart(null),skills:[]},storeOK=true,warnKey=null,editId=null,editEx=null,sec='dash';
+SUBJ.forEach(function(s){st.chapters[s]=[]});
+function t(k){var v=T[k];return v?v[st.lang==='bn'?1:0]:k}
+function $(i){return document.getElementById(i)}
+function el(tag,o,kids){var e=document.createElement(tag);o=o||{};for(var k in o){if(k==='text')e.textContent=o[k];else if(k==='cls')e.className=o[k];else if(k==='on')for(var ev in o.on)e.addEventListener(ev,o.on[ev]);else e.setAttribute(k,o[k])}(kids||[]).forEach(function(c){if(c)e.appendChild(c)});return e}
+function p2(n){return n<10?'0'+n:''+n}
+function today(){var d=new Date();return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
+function dd(s){var a=s.split('-');return new Date(+a[0],+a[1]-1,+a[2])}
+function vDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;var d=dd(s);return !isNaN(d)&&s===d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function fm(m){m=Math.round(m);var h=Math.floor(m/60);return h?h+t('hm')+' '+(m%60)+t('mm'):m+t('mm')}
+function sum(a,k){return a.reduce(function(x,r){return x+r[k]},0)}
+function avg(a){return a.length?Math.round(sum(a,'coverage')/a.length):null}
+function cleanDays(a){var o=[];for(var i=0;i<30;i++)o.push(!!(a&&a[i]));return o}
+function cleanChart(c){c=c&&typeof c==='object'?c:{};return{start:vDate(c.start)?c.start:'',days:cleanDays(c.days)}}
+function cleanRec(r){if(!r||typeof r!=='object')return null;var p=Number(r.planned||0),a=Number(r.actual),c=Number(r.coverage);
+if(!vDate(r.date)||SUBJ.indexOf(r.subject)<0||!(p>=0&&isFinite(p))||!(a>=0&&isFinite(a))||!(c>=0&&c<=100)||ST.indexOf(r.status)<0)return null;
+return{id:String(r.id||uid()),date:r.date,subject:r.subject,topic:typeof r.topic==='string'?r.topic.trim().slice(0,120):'',planned:p,actual:a,coverage:c,status:r.status,notes:typeof r.notes==='string'?r.notes.slice(0,500):''}}
+function sanitize(d){if(!d||typeof d!=='object'||!Array.isArray(d.records)||!Array.isArray(d.exams)||!d.chapters||typeof d.chapters!=='object')return null;
+var bad=0,o={records:[],chapters:{},exams:[],lang:d.lang==='bn'?'bn':'en',bad:0},seen={};
+d.records.forEach(function(r){var c=cleanRec(r);if(!c){bad++;return}while(seen[c.id])c.id=uid();seen[c.id]=1;o.records.push(c)});
+var se={};d.exams.forEach(function(x){if(x&&typeof x.name==='string'&&x.name.trim()&&vDate(x.date)){var id=String(x.id||uid());while(se[id])id=uid();se[id]=1;o.exams.push({id:id,name:x.name.trim().slice(0,100),date:x.date})}else bad++});
+SUBJ.forEach(function(s){o.chapters[s]=[];var a=d.chapters[s];if(Array.isArray(a))a.forEach(function(n){if(typeof n==='string'&&n.trim()&&o.chapters[s].indexOf(n.trim())<0)o.chapters[s].push(n.trim().slice(0,120));else bad++})});
+o.gym=cleanChart(d.gym);o.skills=[];var ss={};(Array.isArray(d.skills)?d.skills:[]).slice(0,60).forEach(function(k){if(k&&typeof k.name==='string'&&k.name.trim()){var id=String(k.id||uid());while(ss[id])id=uid();ss[id]=1;var c=cleanChart(k);o.skills.push({id:id,name:k.name.trim().slice(0,60),start:c.start,days:c.days})}else bad++});
+o.bad=bad;return o}
+function payload(){return{records:st.records,chapters:st.chapters,exams:st.exams,lang:st.lang,gym:st.gym,skills:st.skills}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(payload()));storeOK=true}catch(e){storeOK=false}renderWarn()}
+function load(){try{localStorage.setItem(KEY+'_probe','1');localStorage.removeItem(KEY+'_probe');var raw=localStorage.getItem(KEY);if(raw===null)return;var d=null;try{d=JSON.parse(raw)}catch(e){}
+var s=sanitize(d);if(!s){try{localStorage.setItem(KEY+'_corrupt',raw)}catch(e){}warnKey='wCorrupt';return}
+st.records=s.records;st.chapters=s.chapters;st.exams=s.exams;st.lang=s.lang;st.gym=s.gym;st.skills=s.skills;if(s.bad)warnKey='wPartial'}catch(e){storeOK=false}}
+var tt;function toast(m,ok){var x=$('toast');x.textContent=m;x.className=ok?'ok':'er';x.style.display='block';clearTimeout(tt);tt=setTimeout(function(){x.style.display='none'},4000)}
+function renderWarn(){var w=$('warn');w.textContent='';var k=!storeOK?'wNoStore':warnKey;if(k)w.appendChild(el('div',{cls:'warn',role:'alert',text:t(k)}))}
+var ICON={gym:'<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>',skills:'<path d="M12 3l2.5 6 6.5.5-5 4.3 1.6 6.3L12 16.7 6.4 20l1.6-6.3-5-4.3 6.5-.5z"/>',dash:'<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',report:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 13h7M9 17h7"/>',prog:'<path d="M3 20h18M6 16v-5M12 16V6M18 16v-8"/>',exam:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/>',data:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/>'};
+var SECS=['dash','hist','gym','skills','data'];
+function buildNav(){var n=$('nav');n.textContent='';var b=el('div',{cls:'brand',text:'SemesterFlow'});b.appendChild(el('small',{text:t('sub')}));n.appendChild(b);
+SECS.forEach(function(s){var btn=el('button',{type:'button',cls:s===sec?'on':'',on:{click:function(){show(s)}}});var sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('viewBox','0 0 24 24');sv.innerHTML=ICON[s];btn.appendChild(sv);btn.appendChild(el('span',{text:t('n_'+s)}));n.appendChild(btn)})}
+function show(s){sec=s;SECS.forEach(function(x){$('s-'+x).classList.toggle('on',x===s)});$('ttl').textContent=t('n_'+s);buildNav()}
+function fillSel(id,vals,labelFn,allOpt){var s=$(id),cur=s.value;s.textContent='';if(allOpt)s.appendChild(el('option',{value:'',text:t('all')}));vals.forEach(function(v){s.appendChild(el('option',{value:v,text:labelFn(v)}))});if(cur&&vals.indexOf(cur)>=0)s.value=cur}
+function card(l,v,sub,pct){var c=el('div',{cls:'card'});c.appendChild(el('div',{cls:'lb',text:l}));c.appendChild(el('div',{cls:'big',text:v}));if(pct!=null){var b=el('div',{cls:'bar'});var i=el('i');i.style.width=Math.min(100,pct)+'%';b.appendChild(i);c.appendChild(b)}if(sub)c.appendChild(el('div',{cls:'sm',text:sub}));return c}
+function renderDash(){var c=$('cards');c.textContent='';var R=st.records;
+if(!R.length){c.appendChild(el('div',{cls:'card empty',text:t('noRec'),style:'grid-column:1/-1'}));return}
+var tot=sum(R,'actual'),pl=sum(R,'planned'),td=sum(R.filter(function(r){return r.date===today()}),'actual'),a=avg(R);
+c.appendChild(card(t('c_total'),fm(tot)));c.appendChild(card(t('c_today'),fm(td)));c.appendChild(card(t('c_sess'),''+R.length));
+c.appendChild(card(t('c_comp'),R.filter(function(r){return r.status==='CP'}).length+' / '+R.length));
+c.appendChild(card(t('c_cov'),a+'%',null,a));
+}
+function sorted(a){return a.slice().sort(function(x,y){return x.date<y.date?1:x.date>y.date?-1:0})}
+function badge(s){return el('span',{cls:'bg '+s,text:t(s)})}
+function renderHist(){var b=$('histBox');b.textContent='';var d=$('h-date').value,s=$('h-sub').value,u=$('h-stat').value;
+var L=sorted(st.records).filter(function(r){return(!d||r.date===d)&&(!s||r.subject===s)&&(!u||r.status===u)});
+if(!L.length){b.appendChild(el('div',{cls:'empty',text:st.records.length?t('noMatch'):t('noRec')}));return}
+var tb=el('table'),h=el('tr');['date','subject','actual','cov','status','actions'].forEach(function(k){h.appendChild(el('th',{text:t(k)}))});tb.appendChild(el('thead',{},[h]));
+var tbd=el('tbody');L.forEach(function(r){var tr=el('tr');[r.date,r.subject,fm(r.actual),r.coverage+'%'].forEach(function(x){tr.appendChild(el('td',{text:x}))});
+tr.appendChild(el('td',{},[badge(r.status)]));
+tr.appendChild(el('td',{},[el('button',{cls:'btn g s',type:'button',text:t('edit'),on:{click:function(){startEdit(r.id)}}}),document.createTextNode(' '),el('button',{cls:'btn d s',type:'button',text:t('del'),on:{click:function(){delRec(r.id)}}})]));tbd.appendChild(tr)});
+tb.appendChild(tbd);b.appendChild(tb)}
+function chartBox(ch,onChange){var wrap=el('div'),n=ch.days.filter(Boolean).length;
+var di=ch.start?Math.round((dd(today())-dd(ch.start))/864e5):-1;
+wrap.appendChild(el('div',{cls:'sm',text:n+' / 30 '+t('daysDone')}));
+var bar=el('div',{cls:'bar'}),i=el('i');i.style.width=(n/30*100)+'%';bar.appendChild(i);wrap.appendChild(bar);
+var g=el('div',{cls:'dg'});
+ch.days.forEach(function(v,k){var b=el('button',{type:'button',cls:'dc'+(v?' on':''),'aria-pressed':v?'true':'false','aria-label':t('day')+' '+(k+1),text:''+(k+1),on:{click:function(){ch.days[k]=!ch.days[k];onChange()}}});if(k===di)b.style.outline='2px solid var(--wr)';g.appendChild(b)});
+wrap.appendChild(g);
+var sd=el('input',{type:'date','aria-label':t('startDate'),value:ch.start,style:'max-width:190px'});sd.addEventListener('change',function(){ch.start=vDate(sd.value)?sd.value:'';onChange()});
+var rs=el('button',{cls:'btn g s',type:'button',text:t('clearChart'),on:{click:function(){if(confirm(t('confDel'))){ch.days=cleanDays();ch.start='';onChange()}}}});
+wrap.appendChild(el('div',{cls:'row'},[el('span',{cls:'sm',text:t('startDate')}),sd,rs]));return wrap}
+function renderGym(){var b=$('gymBox');b.textContent='';b.appendChild(chartBox(st.gym,function(){persist();renderGym()}))}
+function renderSkills(){var b=$('skBox');b.textContent='';if(!st.skills.length)b.appendChild(el('div',{cls:'card empty',text:t('noSk')}));
+st.skills.forEach(function(s){var c=el('div',{cls:'card'});
+c.appendChild(el('div',{cls:'top'},[el('h2',{text:s.name,style:'margin:0'}),el('span',{},[
+el('button',{cls:'btn g s',type:'button',text:t('edit'),on:{click:function(){var v=prompt(t('newName'),s.name);if(v&&v.trim()){s.name=v.trim().slice(0,60);persist();renderSkills()}}}}),document.createTextNode(' '),
+el('button',{cls:'btn d s',type:'button',text:t('del'),on:{click:function(){if(confirm(t('confDel'))){st.skills=st.skills.filter(function(x){return x!==s});persist();renderSkills()}}}})])]));
+c.appendChild(chartBox(s,function(){persist();renderSkills()}));b.appendChild(c)})}
+function renderForm(){$('formT').textContent=editId?t('logEdit'):t('logNew');$('f-save').textContent=editId?t('update'):t('save')}
+function applyLang(){document.documentElement.lang=st.lang;document.querySelectorAll('[data-i]').forEach(function(e){e.textContent=t(e.getAttribute('data-i'))});
+fillSel('f-sub',SUBJ,function(x){return x});fillSel('h-sub',SUBJ,function(x){return x},true);fillSel('f-stat',ST,t);fillSel('h-stat',ST,t,true);$('f-stat').value=$('f-stat').value||'NS';
+
+$('l-en').style.outline=st.lang==='en'?'2px solid var(--ac)':'none';$('l-bn').style.outline=st.lang==='bn'?'2px solid var(--ac)':'none';
+$('ttl').textContent=t('n_'+sec);buildNav();renderWarn();renderForm()}
+function renderAll(){applyLang();renderDash();renderHist();renderGym();renderSkills()}
+function resetForm(){editId=null;$('logform').reset();$('f-date').value=today();$('f-stat').value='NS';renderForm()}
+function startEdit(id){var r=st.records.filter(function(x){return x.id===id})[0];if(!r)return;editId=id;
+$('f-date').value=r.date;$('f-sub').value=r.subject;$('f-act').value=r.actual;$('f-cov').value=r.coverage;$('f-stat').value=r.status;$('f-notes').value=r.notes;renderForm();show('dash');$('f-act').focus()}
+function delRec(id){if(!confirm(t('confDel')))return;st.records=st.records.filter(function(r){return r.id!==id});if(editId===id)resetForm();persist();renderAll();toast(t('deleted'),true)}
+function submitLog(e){e.preventDefault();var o={id:editId||uid(),date:$('f-date').value,subject:$('f-sub').value,topic:'',planned:0,actual:$('f-act').value,coverage:$('f-cov').value,status:$('f-stat').value,notes:$('f-notes').value};
+if(!vDate(o.date))return toast(t('eDate'));
+if(o.actual===''||!(Number(o.actual)>=0))return toast(t('eTime'));
+if(o.coverage===''||!(Number(o.coverage)>=0&&Number(o.coverage)<=100))return toast(t('eCov'));
+var c=cleanRec(o);if(!c)return toast(t('eTime'));
+if(editId){st.records=st.records.map(function(r){return r.id===editId?c:r})}else{while(st.records.some(function(r){return r.id===c.id}))c.id=uid();st.records.push(c)}
+var wasEdit=!!editId;persist();resetForm();renderAll();toast(t(wasEdit?'updated':'saved'),true)}
+function doExport(){var d={app:'SemesterFlow',version:1,exportDate:new Date().toISOString(),records:st.records,chapters:st.chapters,exams:st.exams,gym:st.gym,skills:st.skills,preferences:{lang:st.lang}};
+var bl=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),a=el('a',{href:URL.createObjectURL(bl),download:'SemesterFlow-Backup-'+today()+'.json'});document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);toast(t('exported'),true)}
+function doRestore(ev){var f=ev.target.files[0];ev.target.value='';if(!f)return;var fr=new FileReader();
+fr.onerror=function(){toast(t('restBad'))};
+fr.onload=function(){var d=null;try{d=JSON.parse(fr.result)}catch(e){}
+var s=null;if(d&&d.app==='SemesterFlow'){if(d.preferences&&typeof d.preferences==='object')d.lang=d.preferences.lang;s=sanitize(d)}
+if(!s||s.bad>0)return toast(t('restBad'));if(!confirm(t('confRest')))return;
+st.records=s.records;st.chapters=s.chapters;st.exams=s.exams;st.lang=s.lang;st.gym=s.gym;st.skills=s.skills;warnKey=null;editId=null;persist();resetForm();renderAll();toast(t('restOk'),true)};fr.readAsText(f)}
+function doReset(){if(!confirm(t('confReset')))return;var v=prompt(t('typeReset'));if(v===null||v.trim()!=='RESET')return;
+st.records=[];st.exams=[];st.gym=cleanChart(null);st.skills=[];SUBJ.forEach(function(s){st.chapters[s]=[]});warnKey=null;editId=null;persist();resetForm();renderAll();toast(t('resetDone'),true)}
+function setLang(l){st.lang=l;persist();renderAll()}
+function init(){load();$('l-en').onclick=function(){setLang('en')};$('l-bn').onclick=function(){setLang('bn')};
+$('logform').addEventListener('submit',submitLog);$('f-reset').onclick=resetForm;
+$('f-sub').addEventListener('change',applyLang);
+['h-date','h-sub','h-stat'].forEach(function(i){$(i).addEventListener('change',renderHist)});
+$('h-clear').onclick=function(){$('h-date').value='';$('h-sub').value='';$('h-stat').value='';renderHist()};
+
+var addSk=function(){var v=$('sk-name').value.trim();if(!v)return;st.skills.push({id:uid(),name:v.slice(0,60),start:'',days:cleanDays()});$('sk-name').value='';persist();renderSkills()};
+$('sk-add').onclick=addSk;$('sk-name').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addSk()}});
+$('d-exp').onclick=doExport;$('d-file').addEventListener('change',doRestore);$('d-reset').onclick=doReset;
+resetForm();show('dash');renderAll();
+document.addEventListener('visibilitychange',function(){if(!document.hidden){renderDash();renderGym();renderSkills()}})}
+init();})();
+</script></body></html>
